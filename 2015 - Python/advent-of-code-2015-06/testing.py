@@ -1,48 +1,77 @@
 import tkinter as tk
-from tkinter import Canvas, Button
-from PIL import Image, ImageDraw, ImageTk  # Import ImageTk
+from PIL import Image, ImageTk, ImageColor
 
 
-class PixelArtApp:
-    def __init__(this, master, width, height):
-        this.master = master
-        this.master.title("Pixel Art Editor")
+class ChristmasLightsGrid:
+    def __init__(self, size):
+        self.size = size
+        self.grid = [[False] * size for _ in range(size)]
 
-        # Create a blank image with a white background
-        this.image = Image.new("RGB", (width, height), "blue")
-        this.draw = ImageDraw.Draw(this.image)
+    def toggle_lights(self, start_x, start_y, end_x, end_y):
+        for x in range(start_x, end_x + 1):
+            for y in range(start_y, end_y + 1):
+                self.grid[x][y] = not self.grid[x][y]
 
-        # Create a canvas to display the image
-        this.canvas = Canvas(this.master, width=width, height=height, bg="white")
-        this.canvas.pack()
+    def turn_off_lights(self, start_x, start_y, end_x, end_y, turn_on):
+        for x in range(start_x, end_x + 1):
+            for y in range(start_y, end_y + 1):
+                self.grid[x][y] = turn_on
 
-        # Create a button to set a pixel to black
-        this.black_button = Button(this.master, text="Set to Black", command=this.set_pixel_black)
-        this.black_button.pack()
+    def count_lit_lights(self):
+        return sum(row.count(True) for row in self.grid)
 
-        # Create a button to set a pixel to white
-        this.white_button = Button(this.master, text="Set to White", command=this.set_pixel_white)
-        this.white_button.pack()
+    def process_instruction(self, instruction):
+        words = instruction.split()
+        action = words[0]
 
-    def set_pixel_black(self):
-        x, y = 2, 2  # Set coordinates based on your requirements
-        self.draw.point((x, y), fill="black")
-        self.update_canvas()
+        if action == 'toggle':
+            start_x, start_y = map(int, words[1].split(','))
+            end_x, end_y = map(int, words[3].split(','))
+            self.toggle_lights(start_x, start_y, end_x, end_y)
+        else:
+            start_x, start_y = map(int, words[2].split(','))
+            end_x, end_y = map(int, words[4].split(','))
 
-    def set_pixel_white(self):
-        x, y = 2, 2  # Set coordinates based on your requirements
-        self.draw.point((x, y), fill="white")
-        self.update_canvas()
+            if action == 'turn':
+                turn_on = (words[1] == 'on')
+                self.turn_off_lights(start_x, start_y, end_x, end_y, turn_on)
 
-    def update_canvas(self):
-        # Convert the Pillow image to a Tkinter PhotoImage
-        photo = ImageTk.PhotoImage(self.image)
+    def process_instructions(self, instructions):
+        for instruction in instructions:
+            self.process_instruction(instruction)
 
-        # Update the canvas with the new image
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
-        self.canvas.image = photo  # To prevent garbage collection
+    def main(self):
+        # Read instructions from Santa
+        with open("input.txt", "r") as file:
+            instructions = file.readlines()
+
+        # Process instructions
+        self.process_instructions(instructions)
+
+        # Create and display the image
+        self.display_image()
+
+    def display_image(self):
+        root = tk.Tk()
+        root.title("Christmas Lights Grid")
+
+        canvas = tk.Canvas(root, width=self.size, height=self.size)
+        canvas.pack()
+
+        image = Image.new("RGB", (self.size, self.size), "black")
+        pixels = image.load()
+
+        for x in range(self.size):
+            for y in range(self.size):
+                color = "yellow" if self.grid[x][y] else "black"
+                pixels[x, y] = ImageColor.getrgb(color)
+
+        photo = ImageTk.PhotoImage(image)
+        canvas.create_image(0, 0, anchor=tk.NW, image=photo)
+
+        root.mainloop()
 
 
-root = tk.Tk()
-app = PixelArtApp(root, width=300, height=300)
-root.mainloop()
+# Example usage:
+lights_grid = ChristmasLightsGrid(1000)
+lights_grid.main()
