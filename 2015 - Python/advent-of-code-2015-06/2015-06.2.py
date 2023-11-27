@@ -15,9 +15,8 @@ class LightContest:
 
     def useInstructions(self, instruction):
         words = instruction.split()
-        action = words[0]
 
-        if action == "toggle":
+        if words[0] == "toggle":
             start_x, start_y = map(int, words[1].split(","))
             end_x, end_y = map(int, words[3].split(","))
             self.notToggleButMore(start_x, start_y, end_x, end_y)
@@ -25,23 +24,24 @@ class LightContest:
             start_x, start_y = map(int, words[2].split(","))
             end_x, end_y = map(int, words[4].split(","))
 
-            if action == "turn":
+            if words[0] == "turn":
                 switch = (words[1] == "on")
                 self.lightDimming(start_x, start_y, end_x, end_y, switch)
 
     def notToggleButMore(self, start_x, start_y, end_x, end_y):
-        for x in range(start_x, end_x):
-            for y in range(start_y, end_y):
+        for x in range(start_x, end_x + 1):
+            for y in range(start_y, end_y + 1):
                 self.grid[x][y] += 2
 
     def lightDimming(self, start_x, start_y, end_x, end_y, switch):
-        for x in range(start_x, end_x):
-            for y in range(start_y, end_y):
+        for x in range(start_x, end_x + 1):
+            for y in range(start_y, end_y + 1):
                 if switch:
                     self.grid[x][y] += 1
                 else:
                     self.grid[x][y] -= 1
-                    self.grid[x][y] = max(self.grid[x][y], 0)
+                    if self.grid[x][y] < 0:
+                        self.grid[x][y] += 1
 
     def countLevels(self):
         for x in range(1000):
