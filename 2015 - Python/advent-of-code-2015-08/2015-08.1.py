@@ -1,16 +1,18 @@
-def convert_string(input_str):
-    # Decode the string using unicode-escape encoding
-    decoded_str = bytes(input_str, 'utf-8').decode('unicode-escape')
-
-    # Remove non-printable characters
-    printable_str = ''.join(char for char in decoded_str if char.isprintable())
-
-    return printable_str
+def decode_unicode_escape(line):
+    decoded = bytes(line, 'utf-8').decode('unicode-escape')
+    return decoded
 
 
-# Input string
-input_string = "sjdivfriyaaqa\xd2v\"k\"mpcu\"yyu\"en"
+def getOutput():
+    char_diff = 0
 
-# Convert and print the result
-result = convert_string(input_string)
-print(result)
+    with open("input.txt") as file:
+        for line in file:
+            in_memory = decode_unicode_escape(line)
+
+            char_diff += len(line) - len(in_memory) + 2
+
+    return char_diff
+
+
+print(getOutput())
